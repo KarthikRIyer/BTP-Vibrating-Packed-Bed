@@ -1,0 +1,367 @@
+LIGGGHTS (Version LIGGGHTS-PUBLIC 3.8.0, compiled 2020-10-07-18:27:48 by karthik, git commit 6e87343906b56807d7e6e102f94210a8f69e2fe8)
+### Initialization
+
+# Preliminaries
+units si
+atom_style sphere
+atom_modify map array
+boundary f f f
+newton off
+communicate single vel yes
+#processors 2 2 3
+
+#hard_particles yes
+
+# Declare domain
+region domain block -0.06 0.06 -0.05 0.05 -0.05 0.5 units box
+create_box 1 domain
+Created orthogonal box = (-0.06 -0.05 -0.05) to (0.06 0.05 0.5)
+  1 by 1 by 4 MPI processor grid
+
+# neighbour listing
+neighbor 0.001 bin
+neigh_modify delay 0 check no
+
+### setup
+
+# Material and interaction properties required
+fix m1 all property/global youngsModulus peratomtype 1.0e7
+fix m2 all property/global poissonsRatio peratomtype 0.3
+fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+fix m4 all property/global coefficientFriction peratomtypepair 1 0.4
+fix m5 all property/global coefficientRollingFriction peratomtypepair 1 0.007
+
+# create mesh
+fix container all mesh/surface/stress file meshes/bed_mesh.stl type 1 scale 1 curvature_tolerant yes
+fix inface all mesh/surface file meshes/in_face.stl type 1
+fix granwalls all wall/gran model hertz tangential no_history mesh n_meshes 1 meshes container
+
+# particle insertion
+fix pts all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.006
+fix pdd all particledistribution/discrete 32452843 1 pts 1.0
+
+group nve_group region domain
+0 atoms in group nve_group
+region factory block -0.05 0.05 -0.04 0.04 0 0.45
+
+#fix ins all insert/rate/region seed 15485867 distributiontemplate pdd nparticles 3 massrate 10 insert_every 1000 overlapcheck yes vel constant 0. 0. -1.0 region factory ntry_mc 10000
+fix ins nve_group insert/stream seed 15485867 distributiontemplate pdd nparticles 3 massrate 0.1 insert_every 2000 overlapcheck yes vel constant 0. 0. -8.0 insertion_face inface
+
+# define the physics
+pair_style gran model hertz tangential no_history
+pair_coeff * *
+
+### detailed settings
+
+# integrator
+fix integrate nve_group nve/sphere
+
+# gravity
+fix grav all gravity 9.81 vector 0.0 0.0 -1.0
+
+# timestep
+timestep 0.000001
+
+# thermodynamic output settings
+thermo_style custom step atoms ke cpu
+thermo 10000
+thermo_modify norm no lost ignore
+
+# check timestep and initialize dump file
+fix ctg all check/timestep/gran 1 0.01 0.01
+run 1
+Setting up run at Tue Oct 20 22:13:11 2020
+
+INFO: Particle insertion ins: 0.088419 particles every 2000 steps - particle rate 44.209706, (mass rate 1.000000e-01)
+      3 particles (mass 6.785840e-03) within 66000 steps
+Memory usage per processor = 2.94434 Mbytes
+    Step    Atoms         KinEng            CPU 
+       0        0              0              0 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+       1        0              0    0.010416839 
+Loop time of 0.0104293 on 4 procs for 1 steps with 0 atoms, finish time Tue Oct 20 22:13:11 2020
+
+
+Pair  time (%) = 4.91775e-06 (0.0471534)
+Neigh time (%) = 3.39175e-05 (0.325215)
+Comm  time (%) = 8.9846e-05 (0.86148)
+Outpt time (%) = 1.21055e-05 (0.116072)
+Other time (%) = 0.0102885 (98.6501)
+
+Nlocal:    0 ave 0 max 0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Nghost:    0 ave 0 max 0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Neighbor list builds = 1
+Dangerous builds = 0
+unfix ctg
+
+# create imaging info
+dump dumpstl all mesh/stl 1000 post/dump*.stl
+dump dmp all custom/vtk 1000 post/dump*.vtk id type mass x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+### execution and further settings
+
+# fill the cylinder with big particles
+run 100000
+Setting up run at Tue Oct 20 22:13:11 2020
+
+Memory usage per processor = 2.94434 Mbytes
+    Step    Atoms         KinEng            CPU 
+       1        0              0              0 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+   10000        0              0     0.59200212 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+   20000        0              0      1.1880598 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+   30000        0              0      1.7941009 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+   40000        0              0      2.3786099 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+INFO: Particle insertion ins: inserted 1 particle templates (mass 2.261947e-03) at step 48001
+ - a total of 1 particle templates (mass 2.261947e-03) inserted so far.
+   50000        1    0.072589873      3.1058774 
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+INFO: Particle insertion ins: inserted 1 particle templates (mass 2.261947e-03) at step 54001
+ - a total of 2 particle templates (mass 4.523893e-03) inserted so far.
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+WARNING: Particle insertion: Inserting no particle - check particle insertion settings (../fix_insert.cpp:703)
+   60000        2     0.14766064      4.1770178 
+INFO: Particle insertion ins: inserted 1 particle templates (mass 2.261947e-03) at step 60001
+ - a total of 3 particle templates (mass 6.785840e-03) inserted so far.
+   70000        3     0.21757181      5.3708714 
+   80000        3     0.22292578      6.6420639 
+   90000        3     0.22834505      7.8954969 
+  100000        3     0.23382962      9.0748267 
+  100001        3     0.23383017      9.0751263 
+Loop time of 9.07515 on 4 procs for 100000 steps with 3 atoms, finish time Tue Oct 20 22:13:21 2020
+
+
+Pair  time (%) = 0.0535865 (0.590475)
+Neigh time (%) = 1.87136 (20.6207)
+Comm  time (%) = 1.58137 (17.4253)
+Outpt time (%) = 0.0629197 (0.693319)
+Other time (%) = 5.50591 (60.6702)
+
+Nlocal:    0.75 ave 2 max 0 min
+Histogram: 2 0 0 0 0 1 0 0 0 1
+Nghost:    0.25 ave 1 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Neighs:    0 ave 0 max 0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Ave neighs/atom = 0
+Neighbor list builds = 100000
+Dangerous builds = 0
+unfix ins
+
+fix pts all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.001
+fix pdd all particledistribution/discrete 32452843 1 pts 1.0
+#fix ins all insert/rate/region seed 15485867 distributiontemplate pdd nparticles 97 massrate 0.1 insert_every 1000 overlapcheck yes vel constant 0. 0. -1.0 region factory ntry_mc 10000
+fix ins nve_group insert/stream seed 15485867 distributiontemplate pdd nparticles 100 massrate 10 insert_every 1000 overlapcheck yes vel constant 0. 0. -10.0 insertion_face inface
+
+# fill the cylinder with small particles
+run 100000
+Setting up run at Tue Oct 20 22:13:21 2020
+
+INFO: Particle insertion ins: 954.929659 particles every 1000 steps - particle rate 954929.658551, (mass rate 1.000000e+01)
+      100 particles (mass 1.047198e-03) within 0 steps
+Memory usage per processor = 6.6111 Mbytes
+    Step    Atoms         KinEng            CPU 
+  100001        3     0.23383017              0 
+INFO: Particle insertion ins: inserted 100 particle templates (mass 1.047198e-03) at step 100002
+ - a total of 100 particle templates (mass 1.047198e-03) inserted so far.
+  110000      103     0.14094977      1.6204286 
+  120000      103    0.075005543      3.4172079 
+  130000      103    0.074477287      5.4507662 
+  140000      103    0.073481331      7.1783823 
+  150000      103    0.020837612      8.9031965 
+  160000      103    0.019066253      10.533618 
+  170000      103    0.017423825      12.181235 
+  180000      103    0.015865825       13.93734 
+  190000      103    0.012707262      15.673653 
+  200000      103    0.011383474      17.527564 
+  200001      103    0.011383346      17.527931 
+Loop time of 17.528 on 4 procs for 100000 steps with 103 atoms, finish time Tue Oct 20 22:13:38 2020
+
+
+Pair  time (%) = 0.0888853 (0.507104)
+Neigh time (%) = 2.90104 (16.5509)
+Comm  time (%) = 2.57341 (14.6817)
+Outpt time (%) = 0.0965237 (0.550683)
+Other time (%) = 11.8682 (67.7097)
+
+Nlocal:    25.75 ave 99 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:    0.5 ave 1 max 0 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Neighs:    1.5 ave 6 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 6
+Ave neighs/atom = 0.0582524
+Neighbor list builds = 100000
+Dangerous builds = 0
+unfix ins
+
+run 100000
+Setting up run at Tue Oct 20 22:13:38 2020
+
+Memory usage per processor = 5.5655 Mbytes
+    Step    Atoms         KinEng            CPU 
+  200001      103    0.011383346              0 
+  210000      103    0.010147727      1.6873607 
+  220000      103   0.0089812693      3.4069819 
+  230000      103   0.0078956272      5.1460444 
+  240000      103   0.0068853672      7.0335185 
+  250000      103   0.0059497285      8.7464146 
+  260000      103   0.0050895998      10.495824 
+  270000      103   0.0042924574      12.225903 
+  280000      103   0.0035778727      14.136086 
+  290000      103   0.0029450259      15.910125 
+  300000      103   0.0023873758      17.587603 
+  300001      103   0.0023873238      17.587923 
+Loop time of 17.588 on 4 procs for 100000 steps with 103 atoms, finish time Tue Oct 20 22:13:56 2020
+
+
+Pair  time (%) = 0.095797 (0.544673)
+Neigh time (%) = 2.80304 (15.9372)
+Comm  time (%) = 2.94874 (16.7657)
+Outpt time (%) = 0.123517 (0.702282)
+Other time (%) = 11.6169 (66.0501)
+
+Nlocal:    25.75 ave 88 max 3 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Nghost:    22 ave 88 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Neighs:    0.75 ave 3 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 3
+Ave neighs/atom = 0.0291262
+Neighbor list builds = 100000
+Dangerous builds = 0
+
+fix move1 all move/mesh mesh container wiggle  amplitude 0. 0. 0.008 period 0.0833333333
+
+run 300000
+Setting up run at Tue Oct 20 22:13:56 2020
+
+Memory usage per processor = 5.5655 Mbytes
+    Step    Atoms         KinEng            CPU 
+  300001      103   0.0023873238              0 
+  310000      103   0.0019098901      4.1473255 
+  320000      103   0.0014964271      8.2146037 
+  330000      103   0.0011555851      12.328443 
+  340000      103  0.00089786216      16.494452 
+  350000      103  0.00071535203      20.723541 
+  360000      103  0.00060668077      24.832664 
+  370000      103  0.00057206067      28.910785 
+  380000      103  0.00061820341      33.009504 
+  390000      103  0.00073560755      37.188775 
+  400000      103  0.00092757756      41.309319 
+  410000      102   0.0011933573      45.397432 
+  420000      102   0.0015378901       49.78754 
+  430000      102    0.001957394      53.925692 
+  440000      102   0.0024521792      62.007931 
+  450000      102   0.0030194867      68.546102 
+  460000      102   0.0036423019      75.110407 
+  470000      102   0.0043602509      81.305639 
+  480000      102    0.005139236      89.800513 
+  490000      102   0.0059997641      96.836521 
+  500000      102   0.0069373229      107.63218 
+  510000      102   0.0079501629      114.81933 
+  520000      102     0.00901736      121.45331 
+  530000      102    0.010155974      127.83275 
+  540000      102    0.011370338      133.73507 
+  550000      102    0.012675476      139.63988 
+  560000      102    0.014058576      145.59226 
+  570000      102    0.010632446      151.54278 
+  580000      102    0.011486582      157.51874 
+  590000      102    0.012415279      165.13574 
+  600000      102    0.013420043      172.72561 
+  600001      102    0.013420148      172.72675 
+Loop time of 172.727 on 4 procs for 300000 steps with 102 atoms, finish time Tue Oct 20 22:16:48 2020
+
+
+Pair  time (%) = 0.695215 (0.402493)
+Neigh time (%) = 10.0708 (5.83045)
+Comm  time (%) = 11.3666 (6.5807)
+Outpt time (%) = 0.383223 (0.221866)
+Other time (%) = 150.211 (86.9645)
+
+Nlocal:    25.5 ave 87 max 1 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+Nghost:    0.25 ave 1 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Neighs:    0.25 ave 1 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 1
+Ave neighs/atom = 0.00980392
+Neighbor list builds = 300000
+Dangerous builds = 0
+
+unfix move1
+
+run 100000
+Setting up run at Tue Oct 20 22:16:48 2020
+
+Memory usage per processor = 5.56551 Mbytes
+    Step    Atoms         KinEng            CPU 
+  600001      102    0.013420148              0 
+  610000      102    0.014490995      2.1565654 
+  620000      102    0.015616174      4.3318089 
+  630000      102   0.0028892289      6.7490655 
+  640000      102   0.0027092701       10.24201 
+  650000      102   0.0026031957      16.185262 
+  660000      102   0.0025732883      18.892092 
+  670000      102   0.0026163994      21.701073 
+  680000      102   0.0027367659      25.293418 
+  690000      102    0.002852616      27.741776 
+  700000      102   0.0031121809      30.614066 
+  700001      102   0.0031122108      30.614496 
+Loop time of 30.6146 on 4 procs for 100000 steps with 102 atoms, finish time Tue Oct 20 22:17:19 2020
+
+
+Pair  time (%) = 0.196215 (0.64092)
+Neigh time (%) = 3.35752 (10.9671)
+Comm  time (%) = 6.4977 (21.2242)
+Outpt time (%) = 0.145327 (0.4747)
+Other time (%) = 20.4178 (66.6931)
+
+Nlocal:    25.5 ave 88 max 0 min
+Histogram: 2 1 0 0 0 0 0 0 0 1
+Nghost:    16.5 ave 65 max 0 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Neighs:    0 ave 0 max 0 min
+Histogram: 4 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Ave neighs/atom = 0
+Neighbor list builds = 100000
+Dangerous builds = 0
