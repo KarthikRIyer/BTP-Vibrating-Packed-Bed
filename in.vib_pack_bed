@@ -41,7 +41,7 @@ group nve_group region domain
 region factory block -0.05 0.05 -0.04 0.04 0 0.45
 
 #fix ins all insert/rate/region seed 15485867 distributiontemplate pdd nparticles 3 massrate 10 insert_every 1000 overlapcheck yes vel constant 0. 0. -1.0 region factory ntry_mc 10000
-fix ins nve_group insert/stream seed 15485867 distributiontemplate pdd nparticles 3 massrate 0.1 insert_every 2000 overlapcheck yes vel constant 0. 0. -8.0 insertion_face inface
+fix ins nve_group insert/stream seed 15485867 distributiontemplate pdd mass 1.4 massrate 1.0 insert_every 2000 overlapcheck yes vel constant 0. 0. -8.0 insertion_face inface
 
 # define the physics
 pair_style gran model hertz tangential no_history
@@ -69,29 +69,33 @@ run 1
 unfix ctg
 
 # create imaging info
-dump dumpstl all mesh/stl 1000 post/dump*.stl
-dump dmp all custom/vtk 1000 post/dump*.vtk id type mass x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump dumpstl all mesh/stl 100000 post/dump*.stl
+dump dmp all custom/vtk 100000 post/dump*.vtk id type mass x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
 ### execution and further settings
 
 # fill the cylinder with big particles
-run 100000
+run 1400000
 unfix ins
+
+run 1400000
 
 fix pts all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.001
 fix pdd all particledistribution/discrete 32452843 1 pts 1.0
 #fix ins all insert/rate/region seed 15485867 distributiontemplate pdd nparticles 97 massrate 0.1 insert_every 1000 overlapcheck yes vel constant 0. 0. -1.0 region factory ntry_mc 10000
-fix ins nve_group insert/stream seed 15485867 distributiontemplate pdd nparticles 100 massrate 10 insert_every 1000 overlapcheck yes vel constant 0. 0. -10.0 insertion_face inface
+fix ins nve_group insert/stream seed 15485867 distributiontemplate pdd mass 1.4 massrate 1.0 insert_every 2000 overlapcheck yes vel constant 0. 0. -8.0 insertion_face inface
 
 # fill the cylinder with small particles
-run 100000
+run 1400000
 unfix ins
 
-run 100000
+run 1400000
 
+# amplitude 8 mm 12 Hz
 fix move1 all move/mesh mesh container wiggle  amplitude 0. 0. 0.008 period 0.0833333333
 
-run 300000
+# 50s vibrate
+run 50000000
 
 unfix move1
 
