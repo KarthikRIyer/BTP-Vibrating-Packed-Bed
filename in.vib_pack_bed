@@ -27,6 +27,8 @@ fix m2 all property/global poissonsRatio peratomtype 0.3
 fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
 fix m4 all property/global coefficientFriction peratomtypepair 1 0.4
 fix m5 all property/global coefficientRollingFriction peratomtypepair 1 0.007
+fix m6 all property/global coefficientNormaldamping  peratomtypepair 1 0.2
+fix m7 all property/global coefficientTangentialdamping  peratomtypepair 1 0.2
 
 # create mesh
 fix container all mesh/surface/stress file meshes/bed_mesh.stl type 1 scale 1 curvature_tolerant yes
