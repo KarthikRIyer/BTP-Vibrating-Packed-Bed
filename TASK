@@ -7,3 +7,4 @@ a=b c prolate equate volume
 1400g both....mass equal
 
 mpirun -np 4 lmp_auto -echo both < in.vib_pack_bed
+ssh karthik@192.168.124.159

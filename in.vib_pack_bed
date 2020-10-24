@@ -72,6 +72,9 @@ unfix ctg
 dump dumpstl all mesh/stl 100000 post/dump*.stl
 dump dmp all custom/vtk 100000 post/dump*.vtk id type mass x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
+# restart file
+restart 100000 dump.restart.1 dump.restart.2
+
 ### execution and further settings
 
 # fill the cylinder with big particles
